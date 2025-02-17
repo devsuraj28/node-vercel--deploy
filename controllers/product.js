@@ -1,41 +1,76 @@
-const fs = require('fs');
-const data = JSON.parse(fs.readFileSync('data.json', 'utf-8'));
-const products = data.products;
+const Products = require('../models/product');
 
-exports.createProducts = (req, res) => {
-    products.push(req.body);
-    res.status(201).json(req.body);
-}
-
-exports.getAllProducts = (req, res) => {
-    res.json(products);
-}
-
-exports.getproductByID = (req, res) => {
-    const id = +req.params.id;
-    const product = products.find(p => p.id === id);
-    res.json(product);
+exports.createProduct = async (req, res) => {
+    try {
+        const product = new Products.productSchema(req.body);
+        const newProduct = await product.save();
+        res.status(201).json({ message: "Product created successfully", data: newProduct });
+    } catch (error) {
+        res.status(400).json({ message: "Failed to create product", error: error.message });
+    }
 };
 
-exports.replaceProduct = (req, res) => {
-    const id = +req.params.id;
-    const productIndex = products.findIndex(p => p.id === id);
-    products.splice(productIndex, 1, { id: id, ...req.body });
-    res.status(202).json({ 'msg': "Product Updated Successfully" });
+exports.getAllProducts = async (req, res) => {
+    try {
+        const products = await Products.productSchema.find();
+        res.status(200).json({ message: "Products retrieved successfully", data: products });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch products", error: error.message });
+    }
 };
 
-exports.updateProduct = (req, res) => {
-    const id = +req.params.id;
-    const productIndex = products.findIndex(p => p.id === id);
-    const product = products[productIndex];
-    products.splice(productIndex, 1, { ...product, ...req.body });
-    res.status(202).json({ 'data': products[productIndex], 'msg': "Product Details Updated Successfully" });
+exports.getProductByID = async (req, res) => {
+    try {
+        const product = await Products.productSchema.findById({'_id':req.params.id});
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product retrieved successfully", data: product });
+    } catch (error) {
+        res.status(400).json({ message: "Invalid product ID", error: error.message });
+    }
 };
 
-exports.deleteProduct = (req, res) => {
-    const id = +req.params.id;
-    const productIndex = products.findIndex(p => p.id === id);
-    const product = products[productIndex];
-    products.splice(productIndex, 1);
-    res.json({ 'data': product, 'msg': "Product Deleted Successfully" });
+exports.replaceProduct = async (req, res) => {
+    try {
+        const product = await Products.productSchema.findOneAndReplace(
+            { _id: req.params.id },
+            req.body,
+            { new: true, runValidators: false }
+        );
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product replaced successfully", data: product });
+    } catch (error) {
+        res.status(400).json({ message: "Failed to replace product", error: error.message });
+    }
+};
+
+exports.updateProduct = async (req, res) => {
+    try {
+        const product = await Products.productSchema.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product updated successfully", data: product });
+    } catch (error) {
+        res.status(400).json({ message: "Failed to update product", error: error.message });
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    try {
+        const product = await Products.productSchema.findByIdAndDelete(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product deleted successfully" });
+    } catch (error) {
+        res.status(400).json({ message: "Failed to delete product", error: error.message });
+    }
 };

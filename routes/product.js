@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product');
 
-router.post('/', productController.createProducts)
+router.post('/', productController.createProduct)
     .get('/', productController.getAllProducts)
-    .get('/:id', productController.getproductByID)
+    .get('/:id', productController.getProductByID)
     .put('/:id', productController.replaceProduct)
     .patch('/:id', productController.updateProduct)
     .delete('/:id', productController.deleteProduct);
