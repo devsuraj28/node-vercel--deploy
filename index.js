@@ -30,6 +30,12 @@ server.use('/api/products', productRouter.router);
 server.use('/api/users', userRouter.router);
 
 
+//Versel Config
+// export default function handler(req, res) {
+//     res.json({ message: "API is running on Vercel!" });
+// }
+
+
 
 server.listen(8080, (req, res) => {
     console.log('Server Started');
