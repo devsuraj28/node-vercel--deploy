@@ -5,6 +5,7 @@ const express = require('express');
 const morgan = require('morgan');
 const server = express();
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 //Import Custom Modules
 const productRouter = require('./routes/product');
@@ -14,7 +15,7 @@ const userRouter = require('./routes/user');
 main().catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect('mongodb://127.0.0.1:27017/Products').then(() => console.log("MongoDB Connected"))
+    await mongoose.connect(process.env.MONGODB_URL).then(() => console.log("MongoDB Connected"))
         .catch(err => console.error("Connection Error:", err));
 
 }
@@ -28,12 +29,6 @@ server.use(morgan('dev'));
 //Routes -- Api Endpoints --
 server.use('/api/products', productRouter.router);
 server.use('/api/users', userRouter.router);
-
-
-//Versel Config
-// export default function handler(req, res) {
-//     res.json({ message: "API is running on Vercel!" });
-// }
 
 
 
